@@ -1,118 +1,120 @@
-<html>
+<!--
+    Author: Mohamed Ayadi
+    GitHub: https://github.com/Mayedi007
+    Description: Frontend form for creating new items in the flash sale system
+-->
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Create Item</title>
+
+    <!-- Bootstrap & Custom Styles -->
     <link href="static/assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <link href="static/css/common/component.css" rel="stylesheet" type="text/css"/>
     <link href="static/assets/admin/pages/css/login.css" rel="stylesheet" type="text/css"/>
+
+    <!-- Scripts -->
     <script src="static/assets/global/plugins/jquery-1.11.0.min.js" type="text/javascript"></script>
     <script src="./gethost.js" type="text/javascript"></script>
-    <title>Create Item</title>
 </head>
+
 <body class="login">
     <div class="content">
         <h3 class="form-title">Create Item</h3>
+
         <div class="form-group">
-            <label class="control-label">name</label>
-            <div>
-                <input class="form-control" type="text" name="title" id="title"/>
-            </div>
+            <label class="control-label">Name</label>
+            <input class="form-control" type="text" name="title" id="title"/>
         </div>
+
         <div class="form-group">
-            <label class="control-label">description</label>
-            <div>
-                <input class="form-control" type="text" name="description" id="description"/>
-            </div>
+            <label class="control-label">Description</label>
+            <input class="form-control" type="text" name="description" id="description"/>
         </div>
+
         <div class="form-group">
-            <label class="control-label">price</label>
-            <div>
-                <input class="form-control" type="text" name="price" id="price"/>
-            </div>
+            <label class="control-label">Price</label>
+            <input class="form-control" type="text" name="price" id="price"/>
         </div>
+
         <div class="form-group">
-            <label class="control-label">picture</label>
-            <div>
-                <input class="form-control" type="text" name="imgUrl" id="imgUrl"/>
-            </div>
+            <label class="control-label">Picture URL</label>
+            <input class="form-control" type="text" name="imgUrl" id="imgUrl"/>
         </div>
+
         <div class="form-group">
-            <label class="control-label">stock</label>
-            <div>
-                <input class="form-control" type="text" name="stock" id="stock"/>
-            </div>
+            <label class="control-label">Stock</label>
+            <input class="form-control" type="text" name="stock" id="stock"/>
         </div>
+
         <div class="form-actions">
-            <button class="btnBlue" id="create" type="submit">
-                Create
-            </button>
+            <button class="btnBlue" id="create" type="submit">Create</button>
         </div>
     </div>
 
+    <script>
+        jQuery(document).ready(function () {
+            $("#create").on("click", function () {
+                const title = $("#title").val();
+                const description = $("#description").val();
+                const price = $("#price").val();
+                const imgUrl = $("#imgUrl").val();
+                const stock = $("#stock").val();
+
+                if (!title) {
+                    alert("Item name cannot be empty");
+                    return false;
+                }
+                if (!description) {
+                    alert("Item description cannot be empty");
+                    return false;
+                }
+                if (!price) {
+                    alert("Price cannot be empty");
+                    return false;
+                }
+                if (!imgUrl) {
+                    alert("Picture URL cannot be empty");
+                    return false;
+                }
+                if (!stock) {
+                    alert("Stock cannot be empty");
+                    return false;
+                }
+
+                // Submit to backend
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/x-www-form-urlencoded",
+                    url: "http://" + g_host + "/item/create",
+                    data: {
+                        title,
+                        description,
+                        price,
+                        imgUrl,
+                        stock
+                    },
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    crossDomain: true,
+                    success: function (data) {
+                        if (data.status === "success") {
+                            alert("Item created successfully!");
+                        } else {
+                            alert("Failed: " + data.data.errMsg);
+                        }
+                    },
+                    error: function (data) {
+                        alert("Error: " + data.responseText);
+                    }
+                });
+
+                return false;
+            });
+        });
+    </script>
 </body>
-
-
-<script>
-    jQuery(document).ready(function () {
-
-        $("#create").on("click", function(){
-
-          var title = $("#title").val();
-          var description = $("#description").val();
-          var price = $("#price").val();
-          var imgUrl = $("#imgUrl").val();
-          var stock = $("#stock").val();
-
-          if(title == null || title == ""){
-            alert("item name can not be empty");
-            return false;
-          }
-          if(description == null || description == ""){
-              alert("item description can not be empty");
-              return false;
-          }
-          if(price == null || price == ""){
-              alert("price can not be empty");
-              return false;
-          }
-          if(imgUrl == null || imgUrl == ""){
-              alert("picture can not be empty");
-              return false;
-          }
-          if(stock == null || stock == ""){
-              alert("stock can not be empty");
-              return false;
-          }
-
-          //映射到后端@RequestMapping
-          $.ajax({
-              type:"POST",
-              contentType:"application/x-www-form-urlencoded",
-              url:"http://"+g_host+"/item/create",
-              data:{
-                  "title":title,
-                  "description":description,
-                  "price":price,
-                  "imgUrl":imgUrl,
-                  "stock":stock
-              },
-              //允许跨域请求
-              xhrFields: {
-                  withCredentials: true
-              },
-              crossDomain: true,
-              success:function (data) {
-                  if (data.status == "success") {
-                      alert("success");
-                  }else {
-                      alert("failure, because " + data.data.errMsg);
-                  }
-              },
-              error:function (data) {
-                  alert("failure, because "+data.responseText);
-              }
-          });
-          return false;
-        })
-    });
-</script>
 </html>
