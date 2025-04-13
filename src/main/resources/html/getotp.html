@@ -1,69 +1,75 @@
-<html>
+<!--
+    Author: Mohamed Ayadi
+    GitHub: https://github.com/Mayedi007
+    Description: OTP request page for user registration
+-->
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Get OTP</title>
+
+    <!-- Styles -->
     <link href="static/assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <link href="static/css/common/component.css" rel="stylesheet" type="text/css"/>
     <link href="static/assets/admin/pages/css/login.css" rel="stylesheet" type="text/css"/>
+
+    <!-- Scripts -->
     <script src="static/assets/global/plugins/jquery-1.11.0.min.js" type="text/javascript"></script>
     <script src="./gethost.js" type="text/javascript"></script>
-    <title>Get OTP</title>
 </head>
+
 <body class="login">
     <div class="content">
         <h3 class="form-title">Get OTP</h3>
+
         <div class="form-group">
-            <label class="control-label">phone number</label>
+            <label class="control-label">Phone Number</label>
             <div>
-                <input class="form-control" type="text" placeholder="phone number" name="telphone" id="telphone"/>
+                <input class="form-control" type="text" placeholder="Enter your phone number" name="telphone" id="telphone"/>
             </div>
         </div>
+
         <div class="form-actions">
-            <button class="btnBlue" id="getotp" type="submit">
-                Get OTP
-            </button>
+            <button class="btnBlue" id="getotp" type="submit">Get OTP</button>
         </div>
     </div>
 
+    <script>
+        $(document).ready(function () {
+            $("#getotp").on("click", function () {
+                const telphone = $("#telphone").val();
+
+                if (!telphone) {
+                    alert("Phone number cannot be empty.");
+                    return false;
+                }
+
+                // Call the backend to send OTP
+                $.ajax({
+                    method: "POST",
+                    contentType: "application/x-www-form-urlencoded",
+                    url: "http://" + g_host + "/user/getotp",
+                    data: { telphone },
+                    xhrFields: { withCredentials: true },
+                    crossDomain: true,
+                    success: function (data) {
+                        if (data.status === "success") {
+                            alert("OTP has been sent to your phone. Please check it.");
+                            window.location.href = "register.html";
+                        } else {
+                            alert("Failed: " + data.data.errMsg);
+                        }
+                    },
+                    error: function (data) {
+                        alert("Failed: " + data.responseText);
+                    }
+                });
+
+                return false;
+            });
+        });
+    </script>
 </body>
-
-
-<script>
-    jQuery(document).ready(function () {
-
-        $("#getotp").on("click", function(){
-
-          var telphone = $("#telphone").val();
-          if(telphone == null || telphone == ""){
-            alert("phone number can not be empty");
-            return false;
-          }
-          //映射到后端@RequestMapping(value = "/getotp", method = {RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
-          $.ajax({
-              method:"POST",
-              contentType:"application/x-www-form-urlencoded",
-              url:"http://"+g_host+"/user/getotp",
-              data:{
-                "telphone":telphone,
-              },
-              //允许跨域请求
-              xhrFields: {
-                  withCredentials: true
-              },
-              crossDomain: true,
-              success:function (data) {
-                  if (data.status=="success") {
-                      alert("OTP have been sent to your phone, please check it");
-                      window.location.href="register.html";
-                  }else {
-                      alert("failure, because " + data.data.errMsg);
-                  }
-              },
-              error:function (data) {
-                  alert("failure, because "+data.responseText);
-              }
-          });
-          return false;
-        })
-    });
-</script>
 </html>
