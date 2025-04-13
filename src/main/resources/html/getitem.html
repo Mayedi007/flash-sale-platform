@@ -1,136 +1,148 @@
-<html>
+<!--
+    Author: Mohamed Ayadi
+    GitHub: https://github.com/Mayedi007
+    Description: Item detail view with promo countdown and order trigger
+-->
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Item Details</title>
+
     <link href="static/assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <link href="static/css/common/component.css" rel="stylesheet" type="text/css"/>
     <link href="static/assets/admin/pages/css/login.css" rel="stylesheet" type="text/css"/>
+
     <script src="static/assets/global/plugins/jquery-1.11.0.min.js" type="text/javascript"></script>
     <script src="./gethost.js" type="text/javascript"></script>
-    <title>Item Details</title>
 </head>
-<body class="login">
-    <div class="content">
-        <h3 class="form-title">Item Details</h3>
-        <div id="promoStartDateContainer" class="form-group">
-            <label style="color:blue" id="promoStatus" class="control-label"></label>
-            <div>
-                <label style="color:red" class="control-label" id="promoStartDate" />
-            </div>
-        </div>
-        <div class="form-group">
-            <div>
-                <label class="control-label" id="imgUrl"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label">item description</label>
-            <div>
-                <label class="control-label" id="description"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label">item price</label>
-            <div>
-                <label class="control-label" id="price"/>
-            </div>
-        </div>
-        <div id="promoPriceContainer" class="form-group">
-            <label style="color:red" class="control-label">flash sale price</label>
-            <div>
-                <label style="color:red" class="control-label" id="promoPrice" />
-            </div>
-        </div>
 
-        <div class="form-group">
-            <label class="control-label">item stock</label>
-            <div>
-                <label class="control-label" id="stock"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label">item sales</label>
-            <div>
-                <label class="control-label" id="sales"/>
-            </div>
-        </div>
-        <div class="form-actions">
-            <button class="btnBlue" id = "createorder" type="submit">
-                order
-            </button>
+<body class="login">
+<div class="content">
+    <h3 class="form-title">Item Details</h3>
+
+    <div id="promoStartDateContainer" class="form-group">
+        <label id="promoStatus" class="control-label" style="color:blue"></label>
+        <div>
+            <label id="promoStartDate" class="control-label" style="color:red"></label>
         </div>
     </div>
 
-</body>
+    <div class="form-group">
+        <div>
+            <img id="imgUrl" style="max-width: 100%; height: auto;" />
+        </div>
+    </div>
 
+    <div class="form-group">
+        <label class="control-label">Item Description</label>
+        <div>
+            <label id="description" class="control-label"></label>
+        </div>
+    </div>
+
+    <div id="normalPriceContainer" class="form-group">
+        <label class="control-label">Item Price</label>
+        <div>
+            <label id="price" class="control-label"></label>
+        </div>
+    </div>
+
+    <div id="promoPriceContainer" class="form-group">
+        <label class="control-label" style="color:red">Flash Sale Price</label>
+        <div>
+            <label id="promoPrice" class="control-label" style="color:red"></label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label">Stock</label>
+        <div>
+            <label id="stock" class="control-label"></label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label">Sales</label>
+        <div>
+            <label id="sales" class="control-label"></label>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button class="btnBlue" id="createorder" type="submit">Order</button>
+    </div>
+</div>
 
 <script>
-
     function getParam(paramName) {
-        paramValue = "", isFound = !1;
-        if (this.location.search.indexOf("?") == 0 && this.location.search.indexOf("=") > 1) {
-            arrSource = unescape(this.location.search).substring(1, this.location.search.length).split("&"), i = 0;
-            while (i < arrSource.length && !isFound)
-                arrSource[i].indexOf("=") > 0 && arrSource[i].split("=")[0].toLowerCase() == paramName.toLowerCase() && (paramValue = arrSource[i].split("=")[1], isFound = !0), i++
+        const search = window.location.search.substring(1);
+        const params = search.split("&");
+
+        for (let i = 0; i < params.length; i++) {
+            const pair = params[i].split("=");
+            if (pair[0].toLowerCase() === paramName.toLowerCase()) {
+                return decodeURIComponent(pair[1]);
+            }
         }
-        return paramValue == "" && (paramValue = null), paramValue
+        return null;
     }
-    var g_itemVO = {};
-    $(document).ready(function() {
-        // 获取商品详情
+
+    let g_itemVO = {};
+
+    $(document).ready(function () {
+        // Fetch item details
         $.ajax({
             type: "GET",
-            url: "http://"+g_host+"/item/get",
-            data: {
-                "id": getParam("id"),
-            },
-            xhrFields:{
-                withCredentials:true
-            },
-            success: function(data) {
-                if (data.status == "success") {
+            url: "http://" + g_host + "/item/get",
+            data: { id: getParam("id") },
+            xhrFields: { withCredentials: true },
+            success: function (data) {
+                if (data.status === "success") {
                     g_itemVO = data.data;
                     reloadDom();
                     setInterval(reloadDom, 1000);
                 } else {
-                    alert("failure, because" + data.data.errMsg);
+                    alert("Failure: " + data.data.errMsg);
                 }
             },
-            error: function(data) {
-                alert("failure, because" + data.responseText);
+            error: function (data) {
+                alert("Failure: " + data.responseText);
             }
         });
-        $("#createorder").on("click", function() {
-            var token = window.localStorage["token"];
-            if(token == null){
+
+        $("#createorder").on("click", function () {
+            const token = window.localStorage["token"];
+            if (!token) {
                 alert("Please login.");
-                window.location.href="login.html";
+                window.location.href = "login.html";
                 return false;
             }
+
             $.ajax({
                 type: "POST",
-                url: "http://"+g_host+"/order/createorder?token="+token,
+                url: "http://" + g_host + "/order/createorder?token=" + token,
                 contentType: "application/x-www-form-urlencoded",
                 data: {
-                    "itemId": g_itemVO.id,
-                    "promoId": g_itemVO.promoId,
-                    "amount": 1,//暂时写死为一件
+                    itemId: g_itemVO.id,
+                    promoId: g_itemVO.promoId,
+                    amount: 1
                 },
-                xhrFields:{
-                    withCredentials:true
-                },
-                success: function(data) {
-                    if (data.status == "success") {
-                        alert("success");
+                xhrFields: { withCredentials: true },
+                success: function (data) {
+                    if (data.status === "success") {
+                        alert("Order placed successfully.");
                         window.location.reload();
                     } else {
-                        alert("failure, because " + data.data.errMsg);
-                        if (data.data.errCode == 20003) {
-                            window.location.href="login.html";
+                        alert("Failure: " + data.data.errMsg);
+                        if (data.data.errCode === 20003) {
+                            window.location.href = "login.html";
                         }
                     }
                 },
-                error: function(data) {
-                    alert("failure, because " + data.responseText);
+                error: function (data) {
+                    alert("Failure: " + data.responseText);
                 }
             });
         });
@@ -143,30 +155,31 @@
         $("#price").text(g_itemVO.price);
         $("#stock").text(g_itemVO.stock);
         $("#sales").text(g_itemVO.sales);
-        if (g_itemVO.promoStatus == 1) {
-            // 秒杀活动还未开始
-            console.log(g_itemVO.startDate);
-            var startTime = g_itemVO.startDate.replace(new RegExp("-", "gm"), "/");
-            startTime = (new Date(startTime)).getTime();
-            var nowTime = Date.parse(new Date());
-            var delta = (startTime - nowTime) / 1000;
+
+        if (g_itemVO.promoStatus === 1) {
+            const startTime = new Date(g_itemVO.startDate.replace(/-/g, "/")).getTime();
+            const nowTime = Date.now();
+            const delta = Math.floor((startTime - nowTime) / 1000);
+
             if (delta <= 0) {
-                // 活动开始了
                 g_itemVO.promoStatus = 2;
                 reloadDom();
+                return;
             }
-            $("#promoStartDate").text("The sale will begin on: "+g_itemVO.startDate+" Countdown: "+delta+"  s");
+
+            $("#promoStartDate").text(`The sale will begin on: ${g_itemVO.startDate}, Countdown: ${delta}s`);
             $("#promoPrice").text(g_itemVO.promoPrice);
-            $("#createOrder").attr("disabled", true);
-        } else if (g_itemVO.promoStatus == 2) {
-            // 秒杀活动进行中
+            $("#createorder").attr("disabled", true);
+
+        } else if (g_itemVO.promoStatus === 2) {
             $("#promoStartDate").text("Sales promotion is in progress.");
             $("#promoPrice").text(g_itemVO.promoPrice);
-            $("#createOrder").attr("disabled", false);
+            $("#createorder").attr("disabled", false);
             $("#normalPriceContainer").hide();
-        }else{
+        } else {
             $("#promoPriceContainer").hide();
         }
     }
 </script>
+</body>
 </html>
