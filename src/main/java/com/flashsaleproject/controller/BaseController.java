@@ -12,27 +12,37 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Base controller for common functionalities like global exception handling.
+ *
+ * Author: Mohamed Ayadi
+ * GitHub: https://github.com/Mayedi007
+ * Date: 2025-04-13
+ */
+
 public class BaseController {
 
-    public static final String CONTENT_TYPE_FORMED="application/x-www-form-urlencoded";
+    // Define form content type constant
+    public static final String CONTENT_TYPE_FORMED = "application/x-www-form-urlencoded";
 
-    //定义exceptionhandler解决未被controller层吸收的exception
-//    @ExceptionHandler(Exception.class)
-//    @ResponseStatus(HttpStatus.OK)
-//    @ResponseBody
-//    public Object handlerException(HttpServletRequest request, Exception ex){
-//        Map<String, Object> responseDate = new HashMap<>();
-//
-//        if(ex instanceof BusinessException){
-//            BusinessException businessException = (BusinessException) ex;
-//
-//            responseDate.put("errCode", businessException.getErrCode());
-//            responseDate.put("errMsg", businessException.getErrMsg());
-//        }else{
-//            responseDate.put("errCode", EmBusinessError.UNKNOWN_ERROR.getErrCode());
-//            responseDate.put("errMsg", EmBusinessError.UNKNOWN_ERROR.getErrMsg());
-//        }
-//
-//        return CommonReturnType.creat(responseDate,"fail");
-//    }
+    /**
+     * Global exception handler to catch uncaught exceptions in controller layer.
+     */
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public Object handleException(HttpServletRequest request, Exception ex) {
+        Map<String, Object> responseData = new HashMap<>();
+
+        if (ex instanceof BusinessException) {
+            BusinessException businessException = (BusinessException) ex;
+            responseData.put("errCode", businessException.getErrCode());
+            responseData.put("errMsg", businessException.getErrMsg());
+        } else {
+            responseData.put("errCode", EmBusinessError.UNKNOWN_ERROR.getErrCode());
+            responseData.put("errMsg", EmBusinessError.UNKNOWN_ERROR.getErrMsg());
+        }
+
+        return CommonReturnType.create(responseData, "fail");
+    }
 }
