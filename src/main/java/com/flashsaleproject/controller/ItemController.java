@@ -18,28 +18,40 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * Controller for managing item creation, details, and listing.
+ * Includes multi-level caching using local cache and Redis.
+ *
+ * Author: Mohamed Ayadi
+ * GitHub: https://github.com/Mayedi007
+ * Date: 2025-04-13
+ */
+
 @Controller("item")
 @RequestMapping("/item")
 @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
-public class ItemController extends BaseController{
+public class ItemController extends BaseController {
 
     @Autowired
     private ItemService itemService;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     private CacheService cacheService;
 
-    //商品创建接口
-    @RequestMapping(value = "/create", method = {RequestMethod.POST},consumes = {CONTENT_TYPE_FORMED})
+    /**
+     * Create a new item.
+     */
+    @PostMapping(value = "/create", consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
-    public CommonReturnType cerateItem(@RequestParam(name = "title") String title,
-                                       @RequestParam(name = "description") String description,
-                                       @RequestParam(name = "price")BigDecimal price,
-                                       @RequestParam(name = "stock")Integer stock,
-                                       @RequestParam(name = "imgUrl")String imgUrl) throws BusinessException {
+    public CommonReturnType createItem(@RequestParam("title") String title,
+                                       @RequestParam("description") String description,
+                                       @RequestParam("price") BigDecimal price,
+                                       @RequestParam("stock") Integer stock,
+                                       @RequestParam("imgUrl") String imgUrl) throws BusinessException {
+
         ItemModel itemModel = new ItemModel();
         itemModel.setTitle(title);
         itemModel.setDescription(description);
@@ -47,77 +59,79 @@ public class ItemController extends BaseController{
         itemModel.setStock(stock);
         itemModel.setImgUrl(imgUrl);
 
-        ItemModel itemModelForReturn = itemService.creatItem(itemModel);
-        ItemVO itemVO = convertVoFromModel(itemModelForReturn);
+        ItemModel createdItem = itemService.createItem(itemModel);
+        ItemVO itemVO = convertVoFromModel(createdItem);
 
-        return CommonReturnType.creat(itemVO);
+        return CommonReturnType.create(itemVO);
     }
 
-    //商品详情页浏览
-    @RequestMapping(value = "/get", method = {RequestMethod.GET})
+    /**
+     * Get a single item by ID, using multi-level caching (local cache + Redis).
+     */
+    @GetMapping("/get")
     @ResponseBody
-    public CommonReturnType getItem(@RequestParam(name = "id")Integer id){
-        ItemModel itemModel = null;
+    public CommonReturnType getItem(@RequestParam("id") Integer id) {
+        ItemModel itemModel;
 
-        //先取本地缓存
-        itemModel = (ItemModel)cacheService.getFromCommonCache("item_"+id);
+        // Try local cache first
+        itemModel = (ItemModel) cacheService.getFromCommonCache("item_" + id);
 
+        if (itemModel == null) {
+            // Then try Redis cache
+            itemModel = (ItemModel) redisTemplate.opsForValue().get("item_" + id);
 
-        if(itemModel == null){
-            //根据商品id到redis内获取
-            itemModel = (ItemModel)redisTemplate.opsForValue().get("item_"+id);
-            if(itemModel == null) {
-                //若redis内不存在对应的itemModel，则访问下游service
+            if (itemModel == null) {
+                // Then query the DB
                 itemModel = itemService.getItemById(id);
-                //设置itemMdel到redis内
                 redisTemplate.opsForValue().set("item_" + id, itemModel);
                 redisTemplate.expire("item_" + id, 10, TimeUnit.MINUTES);
             }
+
+            // Set into local cache
             cacheService.setCommonCache("item_" + id, itemModel);
         }
 
-//        ItemModel itemModel = itemService.getItemById(id);
-
         ItemVO itemVO = convertVoFromModel(itemModel);
-
-        return CommonReturnType.creat(itemVO);
+        return CommonReturnType.create(itemVO);
     }
 
-    //商品列表页浏览
-    @RequestMapping(value = "/list", method = {RequestMethod.GET})
+    /**
+     * Get a list of all items.
+     */
+    @GetMapping("/list")
     @ResponseBody
-    public CommonReturnType listItem(){
+    public CommonReturnType listItem() {
         List<ItemModel> itemModelList = itemService.listItem();
+        List<ItemVO> itemVOList = itemModelList.stream()
+            .map(this::convertVoFromModel)
+            .collect(Collectors.toList());
 
-        List<ItemVO> itemVOList = itemModelList.stream().map(itemModel -> {
-            ItemVO itemVO = convertVoFromModel(itemModel);
-            return itemVO;
-        }).collect(Collectors.toList());
-
-        return CommonReturnType.creat(itemVOList);
+        return CommonReturnType.create(itemVOList);
     }
 
-
-
-
-    private ItemVO convertVoFromModel(ItemModel itemModel){
-        if(itemModel == null){
+    /**
+     * Converts ItemModel to ItemVO for frontend response.
+     */
+    private ItemVO convertVoFromModel(ItemModel itemModel) {
+        if (itemModel == null) {
             return null;
         }
+
         ItemVO itemVO = new ItemVO();
         BeanUtils.copyProperties(itemModel, itemVO);
+
         if (itemModel.getPromoModel() != null) {
             itemVO.setPromoStatus(itemModel.getPromoModel().getStatus());
             itemVO.setPromoId(itemModel.getPromoModel().getId());
 
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String startDateStr = simpleDateFormat.format(itemModel.getPromoModel().getStartDate());
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String startDateStr = sdf.format(itemModel.getPromoModel().getStartDate());
             itemVO.setStartDate(startDateStr);
-            System.out.println(startDateStr);
             itemVO.setPromoPrice(itemModel.getPromoModel().getPromoItemPrice());
         } else {
             itemVO.setPromoStatus(0);
         }
+
         return itemVO;
     }
 }
