@@ -29,5 +29,27 @@
 
 ---
 
+
 ## 📁 Project Structure
-├── controller # Web controllers (Item, User, Base) ├── service # Business logic layer ├── dao # MyBatis Mappers ├── model # Data models (ItemModel, UserModel, PromoModel) ├── config # Redis, web server, session config ├── static # Frontend: HTML, JS, CSS files ├── resources # Mapper XMLs, application.properties ├── pom.xml # Project config and dependencies
+
+```text
+flash-sale-platform/
+├── pom.xml                         # Maven project file
+├── README.md                       # Project documentation
+├── src/
+│   └── main/
+│       ├── java/com/flashsaleproject/
+│       │   ├── controller/         # REST controllers (Item, User, etc.)
+│       │   ├── service/            # Business logic
+│       │   ├── dao/                # MyBatis mappers
+│       │   ├── model/              # Data models
+│       │   ├── config/             # Configuration classes
+│       │   └── error/              # Custom exceptions
+│       └── resources/
+│           ├── static/html/       # Frontend HTML pages
+│           ├── static/css/        # CSS files
+│           ├── static/js/         # JavaScript files
+│           ├── mybatis/           # Mapper XMLs
+│           ├── application.properties
+│           └── mybatis-generator.xml
+
