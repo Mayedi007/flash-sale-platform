@@ -1,80 +1,88 @@
-<html>
+<!--
+    Author: Mohamed Ayadi
+    GitHub: https://github.com/Mayedi007
+    Description: Displays a list of all items with clickable rows leading to item detail page
+-->
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Item List</title>
+
+    <!-- Styles -->
     <link href="static/assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <link href="static/css/common/component.css" rel="stylesheet" type="text/css"/>
     <link href="static/assets/admin/pages/css/login.css" rel="stylesheet" type="text/css"/>
+
+    <!-- Scripts -->
     <script src="static/assets/global/plugins/jquery-1.11.0.min.js" type="text/javascript"></script>
     <script src="./gethost.js" type="text/javascript"></script>
-    <title>Item List</title>
 </head>
+
 <body>
 <div class="content">
     <h3 class="form-title">Item List</h3>
     <div class="table-responsive">
-        <table class="table">
-                <thead>
+        <table class="table table-striped table-bordered">
+            <thead>
                 <tr>
-                    <th>item name</th>
-                    <th>item picture</th>
-                    <th>item description</th>
-                    <th>item price</th>
-                    <th>item stock</th>
-                    <th>item sales</th>
+                    <th>Item Name</th>
+                    <th>Item Picture</th>
+                    <th>Item Description</th>
+                    <th>Item Price</th>
+                    <th>Item Stock</th>
+                    <th>Item Sales</th>
                 </tr>
-                </thead>
-
-                <tbody id="container">
-
-                </tbody>
-            </table>
-        </div>
+            </thead>
+            <tbody id="container"></tbody>
+        </table>
     </div>
-</body>
-
+</div>
 
 <script>
-    // 定义全局商品数组信息
-    var g_itemList = [];
-    $(document).ready(function() {
+    let g_itemList = [];
+
+    $(document).ready(function () {
         $.ajax({
             type: "GET",
-            url: "http://"+g_host+"/item/list",
-            xhrFields:{
-                withCredentials:true,
+            url: "http://" + g_host + "/item/list",
+            xhrFields: {
+                withCredentials: true
             },
-            success: function(data) {
-                if (data.status == "success") {
+            success: function (data) {
+                if (data.status === "success") {
                     g_itemList = data.data;
                     reloadDom();
                 } else {
-                    alert("failure, because " + data.data.errMsg);
+                    alert("Failure: " + data.data.errMsg);
                 }
             },
-            error: function(data) {
-                alert("failure, because " + data.responseText);
+            error: function (data) {
+                alert("Failure: " + data.responseText);
             }
         });
     });
-    function reloadDom(){
-        for(var i=0; i < g_itemList.length; i++){
-            var itemVO =g_itemList[i];
-            var dom = "<tr data-id='"+itemVO.id+"' id='itemDetail"+itemVO.id+"'><td>"+itemVO.title+"</td>" +
-                "<td><img style='width:100px;height:auto;' src='"+itemVO.imgUrl+"'/></td>" +
-                "<td>"+itemVO.description+"</td>" +
-                "<td>"+itemVO.price+ "</td>" +
-                "<td>"+itemVO.stock+"</td>" +
-                "<td>"+itemVO.sales+"</td>" +
-                "</tr>";
-            $("#container").append($(dom));
 
-            $("#itemDetail"+itemVO.id).on("click", function(){
-                window.location.href="getitem.html?id="+$(this).data("id");
+    function reloadDom() {
+        g_itemList.forEach(itemVO => {
+            const rowHtml = `
+                <tr data-id="${itemVO.id}" id="itemDetail${itemVO.id}" style="cursor:pointer">
+                    <td>${itemVO.title}</td>
+                    <td><img src="${itemVO.imgUrl}" style="width:100px;height:auto;" /></td>
+                    <td>${itemVO.description}</td>
+                    <td>${itemVO.price}</td>
+                    <td>${itemVO.stock}</td>
+                    <td>${itemVO.sales}</td>
+                </tr>
+            `;
+            const $row = $(rowHtml);
+            $("#container").append($row);
+            $row.on("click", function () {
+                window.location.href = "getitem.html?id=" + $(this).data("id");
             });
-        }
+        });
     }
-
-
-
 </script>
+</body>
 </html>
