@@ -30,4 +30,4 @@
 ---
 
 ## 📁 Project Structure
-
+├── controller # Web controllers (Item, User, Base) ├── service # Business logic layer ├── dao # MyBatis Mappers ├── model # Data models (ItemModel, UserModel, PromoModel) ├── config # Redis, web server, session config ├── static # Frontend: HTML, JS, CSS files ├── resources # Mapper XMLs, application.properties ├── pom.xml # Project config and dependencies
