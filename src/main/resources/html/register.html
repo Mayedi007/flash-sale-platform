@@ -1,128 +1,113 @@
-<html>
+<!--
+    Author: Mohamed Ayadi
+    GitHub: https://github.com/Mayedi007
+    Description: User registration page with OTP verification
+-->
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>User Register</title>
+
+    <!-- Styles -->
     <link href="static/assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <link href="static/css/common/component.css" rel="stylesheet" type="text/css"/>
     <link href="static/assets/admin/pages/css/login.css" rel="stylesheet" type="text/css"/>
+
+    <!-- Scripts -->
     <script src="static/assets/global/plugins/jquery-1.11.0.min.js" type="text/javascript"></script>
     <script src="./gethost.js" type="text/javascript"></script>
-    <title>User Register</title>
 </head>
+
 <body class="login">
-    <div class="content">
-        <h3 class="form-title">User Register</h3>
-        <div class="form-group">
-            <label class="control-label">phone number</label>
-            <div>
-                <input class="form-control" type="text" placeholder="phone number" name="telphone" id="telphone"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label">validation code</label>
-            <div>
-                <input class="form-control" type="text" placeholder="validation code" name="otpCode" id="otpCode"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label">user name</label>
-            <div>
-                <input class="form-control" type="text" placeholder="user name" name="name" id="name"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label">gender</label>
-            <div>
-                <input class="form-control" type="text" placeholder="gender" name="gender" id="gender"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label">age</label>
-            <div>
-                <input class="form-control" type="text" placeholder="age" name="age" id="age"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label">password</label>
-            <div>
-                <input class="form-control" type="text" placeholder="password" name="password" id="password"/>
-            </div>
-        </div>
-        <div class="form-actions">
-            <button class="btnBlue" id="register" type="submit">
-                register
-            </button>
-        </div>
+<div class="content">
+    <h3 class="form-title">User Register</h3>
+
+    <div class="form-group">
+        <label class="control-label">Phone Number</label>
+        <input class="form-control" type="text" placeholder="Phone number" id="telphone"/>
     </div>
 
-</body>
+    <div class="form-group">
+        <label class="control-label">Validation Code (OTP)</label>
+        <input class="form-control" type="text" placeholder="OTP Code" id="otpCode"/>
+    </div>
 
+    <div class="form-group">
+        <label class="control-label">User Name</label>
+        <input class="form-control" type="text" placeholder="Your name" id="name"/>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label">Gender (0: Female, 1: Male)</label>
+        <input class="form-control" type="text" placeholder="Gender (0 or 1)" id="gender"/>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label">Age</label>
+        <input class="form-control" type="text" placeholder="Age" id="age"/>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label">Password</label>
+        <input class="form-control" type="password" placeholder="Password" id="password"/>
+    </div>
+
+    <div class="form-actions">
+        <button class="btnBlue" id="register" type="submit">Register</button>
+    </div>
+</div>
 
 <script>
-    jQuery(document).ready(function () {
+    $(document).ready(function () {
+        $("#register").on("click", function () {
+            const telphone = $("#telphone").val();
+            const otpCode = $("#otpCode").val();
+            const name = $("#name").val();
+            const gender = $("#gender").val();
+            const age = $("#age").val();
+            const password = $("#password").val();
 
-        $("#register").on("click", function(){
+            if (!telphone) return alert("Phone number cannot be empty");
+            if (!otpCode) return alert("Validation code cannot be empty");
+            if (!name) return alert("User name cannot be empty");
+            if (!gender) return alert("Gender cannot be empty");
+            if (!age) return alert("Age cannot be empty");
+            if (!password) return alert("Password cannot be empty");
 
-          var telphone = $("#telphone").val();
-          var password = $("#password").val();
-          var age = $("#age").val();
-          var gender = $("#gender").val();
-          var name = $("#name").val();
-          var otpCode = $("#otpCode").val();
+            $.ajax({
+                type: "POST",
+                contentType: "application/x-www-form-urlencoded",
+                url: "http://" + g_host + "/user/register",
+                data: {
+                    telphone,
+                    otpCode,
+                    name,
+                    gender,
+                    age,
+                    password
+                },
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success: function (data) {
+                    if (data.status === "success") {
+                        alert("Registration successful!");
+                        window.location.href = "login.html";
+                    } else {
+                        alert("Registration failed: " + data.data.errMsg);
+                    }
+                },
+                error: function (data) {
+                    alert("Error: " + data.responseText);
+                }
+            });
 
-          if(telphone == null || telphone == ""){
-            alert("phone number can not be empty");
             return false;
-          }
-          if(password == null || password == ""){
-              alert("password can not be empty");
-              return false;
-          }
-          if(age == null || age == ""){
-              alert("age can not be empty");
-              return false;
-          }
-          if(gender == null || gender == ""){
-              alert("gender can not be empty");
-              return false;
-          }
-          if(name == null || name == ""){
-              alert("user name can not be empty");
-              return false;
-          }
-          if(otpCode == null || otpCode == ""){
-              alert("validation code can not be empty");
-              return false;
-          }
-          //映射到后端@RequestMapping(value = "/getotp", method = {RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
-          $.ajax({
-              type:"POST",
-              contentType:"application/x-www-form-urlencoded",
-              url:"http://"+g_host+"/user/register",
-              data:{
-                  "telphone":telphone,
-                  "password":password,
-                  "age":age,
-                  "gender":gender,
-                  "name":name,
-                  "otpCode":otpCode,
-              },
-              //允许跨域请求
-              xhrFields: {
-                  withCredentials: true
-              },
-              crossDomain: true,                success:function (data) {
-                  if (data.status=="success") {
-                      alert("success");
-                  }else {
-                      alert("failure，because " + data.data.errMsg);
-                  }
-              },
-              error:function (data) {
-                  alert("failure，because "+data.responseText);
-              }
-          });
-          return false;
-        })
+        });
     });
 </script>
+</body>
 </html>
