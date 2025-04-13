@@ -8,29 +8,35 @@ import org.springframework.boot.web.server.ConfigurableWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 
+/**
+ * Customizes the embedded Tomcat web server configuration.
+ * 
+ * This config sets Keep-Alive timeout settings to improve performance
+ * and manage client connection behavior.
+ *
+ * Author: Mohamed Ayadi
+ * GitHub: https://github.com/Mayedi007
+ * Date: 2025-04-13
+ */
 
-//当Spring容器内没有TomcatEmbeddedServletContainerFactory这个bean时，会吧此bean加载进spring中
 @Component
 public class WebServerConfiguration implements WebServerFactoryCustomizer<ConfigurableWebServerFactory> {
 
     @Override
     public void customize(ConfigurableWebServerFactory factory) {
-        //Customise our tomcat connector with the interfaces provided by the corresponding factory class.
-        ((TomcatServletWebServerFactory)factory).addConnectorCustomizers(new TomcatConnectorCustomizer() {
-            @Override
-            public void customize(Connector connector) {
-                Http11NioProtocol protocol = (Http11NioProtocol) connector.getProtocolHandler();
+        if (factory instanceof TomcatServletWebServerFactory) {
+            ((TomcatServletWebServerFactory) factory).addConnectorCustomizers(new TomcatConnectorCustomizer() {
+                @Override
+                public void customize(Connector connector) {
+                    Http11NioProtocol protocol = (Http11NioProtocol) connector.getProtocolHandler();
 
-                //Customise keepalivetimeout, set the server to automatically disconnect
-                // the keepalive link if there is no request within 30 seconds.
-                protocol.setKeepAliveTimeout(30000);
-                //Automatically breaks the keepalive link when the client sends more than
-                // 10,000 requests
-                protocol.setMaxKeepAliveRequests(10000);
-            }
-        });
+                    // Disconnect keep-alive connections if no request within 30 seconds
+                    protocol.setKeepAliveTimeout(30000);
 
-
+                    // Limit max keep-alive requests to 10,000 per connection
+                    protocol.setMaxKeepAliveRequests(10000);
+                }
+            });
+        }
     }
-
 }
