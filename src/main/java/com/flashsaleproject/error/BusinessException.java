@@ -1,17 +1,29 @@
 package com.flashsaleproject.error;
 
-//包装器业务异常类实现
-public class BusinessException  extends Exception implements CommonError{
+/**
+ * Wrapper class for handling business-level exceptions.
+ * Implements a standard interface for error codes and messages.
+ *
+ * Author: Mohamed Ayadi
+ * GitHub: https://github.com/Mayedi007
+ * Date: 2025-04-13
+ */
+public class BusinessException extends Exception implements CommonError {
 
-    private CommonError commonError;
+    private final CommonError commonError;
 
-    //直接接受EmBusinessError的传参用于构造也无异常
-    public BusinessException(CommonError commonError){
+    /**
+     * Constructor accepting a predefined CommonError (e.g., EmBusinessError).
+     */
+    public BusinessException(CommonError commonError) {
         super();
         this.commonError = commonError;
     }
 
-    public BusinessException(CommonError commonError, String errMsg){
+    /**
+     * Constructor with custom error message overriding the default.
+     */
+    public BusinessException(CommonError commonError, String errMsg) {
         super();
         this.commonError = commonError;
         this.commonError.setErrMsg(errMsg);
